@@ -14,7 +14,10 @@ defmodule Jefe.Mixfile do
   #
   # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger]]
+    [
+      applications: [:logger, :erlexec],
+      mod: {Jefe, []}
+    ]
   end
 
   # Dependencies can be Hex packages:
@@ -27,6 +30,6 @@ defmodule Jefe.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    []
+    [{:erlexec, "~> 1.1.3"}]
   end
 end
