@@ -5,21 +5,21 @@ defmodule Jefe.CommandRunner do
   use GenServer
   require Logger
 
-  alias Jefe.{Command, OutputHandler}
+  alias Jefe.{Command, OutputRouter}
 
-  @spec start_link(Command.t, pid) :: {:ok, pid} | {:err, atom}
-  def start_link(command, outputter) do
-    GenServer.start_link(__MODULE__, {command, outputter})
+  @spec start_link(Command.t) :: {:ok, pid} | {:err, atom}
+  def start_link(command) do
+    GenServer.start_link(__MODULE__, command)
   end
 
   @spec init(Command.t) :: {:ok, Command.t}
-  def init({command, outputter}) do
-    {:ok, %{command: command, outputter: outputter, pid: nil}, 0}
+  def init(command) do
+    {:ok, %{command: command, pid: nil}, 0}
   end
 
   def handle_info(:timeout, state = %{command: %{cmd: cmd}}) do
     {:ok, pid, os_pid} = :exec.run_link(
-      cmd |> String.to_char_list, [:stdout, :stderr]
+      cmd |> String.to_char_list, [:stdout, :stderr, :stdin, :pty]
     )
 
     # Ideally I'd like to link to the erlexec process, but that doesn't
@@ -31,12 +31,12 @@ defmodule Jefe.CommandRunner do
   end
 
   def handle_info({:stdout, pid, data}, %{pid: pid} = state) do
-    OutputHandler.stdout(state.outputter, data)
+    OutputRouter.stdout(state.command.name, data)
     {:noreply, state}
   end
 
   def handle_info({:stderr, pid, data}, %{pid: pid} = state) do
-    OutputHandler.stderr(state.outputter, data)
+    OutputRouter.stderr(state.command.name, data)
     {:noreply, state}
   end
 

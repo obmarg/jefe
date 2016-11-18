@@ -15,7 +15,7 @@ defmodule Jefe.Mixfile do
   # Type "mix help compile.app" for more information
   def application do
     [
-      applications: [:logger, :erlexec],
+      applications: [:logger, :erlexec, :ssh, :gproc],
       mod: {Jefe, []}
     ]
   end
