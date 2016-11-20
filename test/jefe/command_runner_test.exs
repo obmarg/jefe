@@ -54,4 +54,14 @@ defmodule Jefe.CommandRunnerTest do
     :timer.sleep(50)
     refute os_pid in :exec.which_children
   end
+
+  test "sending input to command" do
+    {:ok, _} = Runner.start_link(
+      %Command{name: "test", cmd: "read FIRSTWORD REST; echo $FIRSTWORD; sleep 1"}
+    )
+    OutputRouter.subscribe("test")
+
+    Runner.send_output("test", "HELLO THERE!\n")
+    assert_receive {:output, {:stdout, "HELLO\r\n"}}
+  end
 end

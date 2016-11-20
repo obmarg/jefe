@@ -9,12 +9,25 @@ defmodule Jefe.CommandRunner do
 
   @spec start_link(Command.t) :: {:ok, pid} | {:err, atom}
   def start_link(command) do
-    GenServer.start_link(__MODULE__, command)
+    GenServer.start_link(__MODULE__, command, name: proc_name(command))
+  end
+
+  @spec send_output(GenServer.server | String.t, String.t) :: :ok | no_return
+  def send_output(name, output) when is_binary(name) do
+    name |> proc_name |> send_output(output)
+  end
+  def send_output(server, output) do
+    GenServer.call(server, {:send_output, output})
   end
 
   @spec init(Command.t) :: {:ok, Command.t}
   def init(command) do
     {:ok, %{command: command, pid: nil}, 0}
+  end
+
+  def handle_call({:send_output, output}, _from, state) do
+    :ok = :exec.send(state.pid, output)
+    {:reply, :ok, state}
   end
 
   def handle_info(:timeout, state = %{command: %{cmd: cmd}}) do
@@ -47,5 +60,11 @@ defmodule Jefe.CommandRunner do
   def handle_info(msg, state) do
     Logger.debug("Unknown info message: #{inspect msg}")
     {:noreply, state}
+  end
+
+  @spec proc_name(Command.t | String.t) :: GenServer.server
+  defp proc_name(%Command{name: name}), do: proc_name(name)
+  defp proc_name(command_name) do
+    {:via, :gproc, {:n, :l, {__MODULE__, command_name}}}
   end
 end
