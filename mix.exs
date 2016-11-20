@@ -15,7 +15,7 @@ defmodule Jefe.Mixfile do
   # Type "mix help compile.app" for more information
   def application do
     [
-      applications: [:logger, :erlexec, :ssh, :gproc],
+      applications: [:logger, :erlexec, :ssh, :gproc, :timex],
       mod: {Jefe, []}
     ]
   end
@@ -32,6 +32,7 @@ defmodule Jefe.Mixfile do
   defp deps do
     [{:erlexec, "~> 1.6.4"},
      {:gproc, "~> 0.6.1"},
-     {:recon, "~> 2.2.1"}]
+     {:recon, "~> 2.2.1"},
+     {:timex, "~> 3.0"}]
   end
 end

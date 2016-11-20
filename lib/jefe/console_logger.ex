@@ -5,24 +5,63 @@ defmodule Jefe.ConsoleLogger do
   use GenServer
   require Logger
 
-  alias Jefe.OutputRouter
+  alias Jefe.{OutputRouter, Procfile}
 
   def start_link do
     GenServer.start_link(__MODULE__, nil)
   end
 
+
+  @typep color_map :: %{String.t => (String.t -> String.t)}
+  @typep state :: %{command_str_width: integer, color_map: color_map}
+
   def init(nil) do
+    commands = Procfile.read
+
+    max_length = Enum.max(
+      for command <- commands, do: String.length(command.name)
+    )
+
     OutputRouter.subscribe
-    {:ok, nil}
+    {:ok, %{command_str_width: max_length + 1, color_map: color_map(commands)}}
   end
 
   def handle_info({:output, command_name, {_type, data}}, state) do
-    # Lets output some really simple data initially...
-    IO.write(data)
+    String.splitter(data, "\n")
+    |> Enum.map(
+      &format_line(command_name, state, &1)
+    )
+    |> Enum.each(&IO.puts/1)
     {:noreply, state}
   end
 
-  def handle_info(unknown, state) do
+  def handle_info(unknown, _state) do
     Logger.warn "Unknown message received in ConsoleLogger: #{inspect unknown}"
   end
+
+  @spec color_map([Jefe.Command.t]) :: color_map
+  defp color_map(commands) do
+    color_fns = Stream.cycle([
+      &IO.ANSI.green/0,
+      &IO.ANSI.red/0,
+      &IO.ANSI.magenta/0,
+      &IO.ANSI.cyan/0,
+      &IO.ANSI.yellow/0,
+      &IO.ANSI.blue/0,
+    ])
+    for {command, color} <- Enum.zip(commands, color_fns), into: %{} do
+      {command.name, fn (data) ->
+        color.() <> data <> IO.ANSI.reset()
+      end}
+    end
+  end
+
+  @spec format_line(String.t, state, String.t) :: String.t
+  defp format_line(command_name, state, line) do
+    color_fn = state.color_map[command_name]
+    time_str = Timex.format!(Timex.now, "%T", :strftime)
+    command_name = String.pad_trailing(command_name, state.command_str_width)
+    color_fn.("#{time_str} #{command_name} | ") <> line
+  end
+
 end
