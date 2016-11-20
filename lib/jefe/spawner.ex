@@ -11,10 +11,9 @@ defmodule Jefe.Spawner do
   end
 
   def init(nil) do
-    "Procfile"
-    |> File.read!
-    |> Procfile.parse
+    Procfile.read
     |> Enum.each(&Supervisor.start_child(Jefe.CommandSupervisor, [&1]))
+
     {:ok, nil}
   end
 end

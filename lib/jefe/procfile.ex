@@ -4,6 +4,15 @@ defmodule Jefe.Procfile do
   """
   alias Jefe.Command
 
+  @doc """
+  Reads and parses a file named Procfile.
+  """
+  @spec read :: [Command.t]
+  def read, do: "Procfile" |> File.read! |> parse
+
+  @doc """
+  Parses the passed in data, assuming it is in Procfile format.
+  """
   @spec parse(String.t) :: [Command.t]
   def parse(data) do
     data
