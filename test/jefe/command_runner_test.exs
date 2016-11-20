@@ -14,12 +14,20 @@ defmodule Jefe.CommandRunnerTest do
     # TODO: Could do a `ps aux` if I really wanted...
   end
 
-  test "forwards output to outputters" do
+  test "forwards output to outputters subscribed to command name" do
     {:ok, pid} = Runner.start_link(
       %Command{name: "test", cmd: "echo 'hello!'"}
     )
     OutputRouter.subscribe("test")
     assert_receive {:output, {:stdout, "hello!\r\n"}}
+  end
+
+  test "forwards output to outputters subscribed to all" do
+    {:ok, pid} = Runner.start_link(
+      %Command{name: "test", cmd: "echo 'hello!'"}
+    )
+    OutputRouter.subscribe
+    assert_receive {:output, "test", {:stdout, "hello!\r\n"}}
   end
 
   test "dies if command does not exist" do

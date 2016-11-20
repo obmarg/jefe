@@ -11,6 +11,7 @@ defmodule Jefe.OutputRouter do
   @spec stdout(key, String.t) :: String.t
   def stdout(key, data) do
     key |> addr |> :gproc.send({:output, {:stdout, data}})
+    :all |> addr |> :gproc.send({:output, key, {:stdout, data}})
   end
 
   @doc """
@@ -19,7 +20,14 @@ defmodule Jefe.OutputRouter do
   @spec stderr(key, String.t) :: String.t
   def stderr(key, data) do
     key |> addr |> :gproc.send({:output, {:stderr, data}})
+    :all |> addr |> :gproc.send({:output, key, {:stdout, data}})
   end
+
+  @doc """
+  Subscribes the current process to output from all topics.
+  """
+  @spec subscribe :: :ok
+  def subscribe, do: subscribe(:all)
 
   @doc """
   Subscribes the current process to output from the provided topic.
