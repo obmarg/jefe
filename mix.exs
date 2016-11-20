@@ -30,6 +30,8 @@ defmodule Jefe.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    [{:erlexec, "~> 1.1.3"}]
+    [{:erlexec, "~> 1.6.4"},
+     {:gproc, "~> 0.6.1"},
+     {:recon, "~> 2.2.1"}]
   end
 end
