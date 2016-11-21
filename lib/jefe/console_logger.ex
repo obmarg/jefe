@@ -7,13 +7,19 @@ defmodule Jefe.ConsoleLogger do
 
   alias Jefe.{OutputRouter, Procfile}
 
+  @typep color_map :: %{String.t => (String.t -> String.t)}
+  @typep state :: %{
+    command_str_width: integer,
+    color_map: color_map,
+    buffers: %{String.t => String.t}
+  }
+
+  # Flush output to console every 200ms
+  @flush_period 200
+
   def start_link do
     GenServer.start_link(__MODULE__, nil)
   end
-
-
-  @typep color_map :: %{String.t => (String.t -> String.t)}
-  @typep state :: %{command_str_width: integer, color_map: color_map}
 
   def init(nil) do
     commands = Procfile.read
@@ -23,16 +29,33 @@ defmodule Jefe.ConsoleLogger do
     )
 
     OutputRouter.subscribe
-    {:ok, %{command_str_width: max_length + 1, color_map: color_map(commands)}}
+
+    setup_flush_timer
+
+    {:ok,
+     %{command_str_width: max_length + 1,
+       color_map: color_map(commands),
+       buffers: %{}}}
   end
 
   def handle_info({:output, command_name, {_type, data}}, state) do
-    String.splitter(data, "\n")
-    |> Enum.map(
-      &format_line(command_name, state, &1)
-    )
-    |> Enum.each(&IO.puts/1)
-    {:noreply, state}
+    {:noreply,
+     update_in(state[:buffers][command_name], fn
+       (nil) -> data
+       (old_data) -> old_data <> data
+     end)}
+  end
+
+  def handle_info(:flush, state) do
+    Enum.each(state.buffers, fn {command_name, data} ->
+      String.splitter(data, "\n")
+      |> Enum.map(
+        &format_line(command_name, state, &1)
+      )
+      |> Enum.each(&IO.puts/1)
+    end)
+    setup_flush_timer
+    {:noreply, %{state | buffers: %{}}}
   end
 
   def handle_info(unknown, _state) do
@@ -64,4 +87,7 @@ defmodule Jefe.ConsoleLogger do
     color_fn.("#{time_str} #{command_name} | ") <> line
   end
 
+  defp setup_flush_timer() do
+    :erlang.send_after(@flush_period, self, :flush)
+  end
 end
