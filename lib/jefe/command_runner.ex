@@ -20,6 +20,14 @@ defmodule Jefe.CommandRunner do
     GenServer.call(server, {:send_output, output})
   end
 
+  @spec os_pid(GenServer.server | String.t) :: pid | no_return
+  def os_pid(name) when is_binary(name) do
+    name |> proc_name |> os_pid
+  end
+  def os_pid(server) do
+    GenServer.call(server, :os_pid)
+  end
+
   @spec init(Command.t) :: {:ok, Command.t}
   def init(command) do
     {:ok, %{command: command, pid: nil}, 0}
@@ -28,6 +36,10 @@ defmodule Jefe.CommandRunner do
   def handle_call({:send_output, output}, _from, state) do
     :ok = :exec.send(state.pid, output)
     {:reply, :ok, state}
+  end
+
+  def handle_call(:os_pid, _from, state) do
+    {:reply, state.pid, state}
   end
 
   def handle_info(:timeout, state = %{command: %{cmd: cmd}}) do

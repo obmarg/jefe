@@ -9,7 +9,7 @@ defmodule Jefe.CommandRunnerTest do
       %Command{name: "test", cmd: "sleep 1"}
     )
     :timer.sleep(10)
-    %{pid: os_pid} = :sys.get_state(pid)
+    os_pid = Runner.os_pid("test")
     assert os_pid in :exec.which_children
     # TODO: Could do a `ps aux` if I really wanted...
   end
@@ -55,7 +55,7 @@ defmodule Jefe.CommandRunnerTest do
     )
     :timer.sleep(50)
 
-    %{pid: os_pid} = :sys.get_state(pid)
+    os_pid = Runner.os_pid(pid)
     assert os_pid in :exec.which_children
 
     GenServer.stop(pid)
