@@ -4,7 +4,7 @@ defmodule Jefe.SSH.ClientSession do
   """
   use GenServer
 
-  alias Jefe.{Command, CommandRunner, OutputRouter}
+  alias Jefe.{CommandRunner, OutputRouter}
 
   def start_link(command_name) do
     GenServer.start_link(__MODULE__, command_name)

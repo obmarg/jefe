@@ -53,7 +53,7 @@ defmodule Jefe.CommandRunner do
     {:noreply, state}
   end
 
-  def handle_info({:DOWN, _, :process, _, reason}, state) do
+  def handle_info({:DOWN, _, :process, _, _reason}, state) do
     {:stop, :normal, state}
   end
 
