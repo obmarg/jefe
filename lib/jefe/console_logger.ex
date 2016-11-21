@@ -24,9 +24,11 @@ defmodule Jefe.ConsoleLogger do
   def init(nil) do
     commands = Procfile.read
 
-    max_length = Enum.max(
-      for command <- commands, do: String.length(command.name)
-    )
+    max_length = case commands do
+      [] -> 0
+      commands ->
+        Enum.max(for command <- commands, do: String.length(command.name))
+    end
 
     OutputRouter.subscribe
 

@@ -8,7 +8,13 @@ defmodule Jefe.Procfile do
   Reads and parses a file named Procfile.
   """
   @spec read :: [Command.t]
-  def read, do: "Procfile" |> File.read! |> parse
+  def read do
+    if File.exists?("Procfile") do
+      "Procfile" |> File.read! |> parse
+    else
+      []
+    end
+  end
 
   @doc """
   Parses the passed in data, assuming it is in Procfile format.
