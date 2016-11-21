@@ -83,7 +83,7 @@ defmodule Jefe.ConsoleLogger do
 
   @spec format_line(String.t, state, String.t) :: String.t
   defp format_line(command_name, state, line) do
-    color_fn = state.color_map[command_name]
+    color_fn = state.color_map[command_name] || fn x -> x end
     time_str = Timex.format!(Timex.now, "%T", :strftime)
     command_name = String.pad_trailing(command_name, state.command_str_width)
     color_fn.("#{time_str} #{command_name} | ") <> line

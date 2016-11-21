@@ -13,7 +13,7 @@ defmodule ConsoleLoggerTest do
 
     OutputRouter.stdout("test", msg)
 
-    assert_receive {:io_request, _, _, {:put_chars, :unicode, msg1}}
+    assert_receive {:io_request, _, _, {:put_chars, :unicode, msg1}}, 210
     # Note: this is a bit hacky: we're expected to reply to this io_request
     # message, but we don't.
     # It does mean we can't easily receive more than one line though...
