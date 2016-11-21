@@ -6,16 +6,13 @@ defmodule Jefe.SSH.ClientSession do
 
   alias Jefe.{Command, CommandRunner, OutputRouter}
 
-  def start_link do
-    GenServer.start_link(__MODULE__, nil)
+  def start_link(command_name) do
+    GenServer.start_link(__MODULE__, command_name)
   end
 
-  def init(nil) do
-    {:ok, command_runner} = CommandRunner.start_link(
-      %Command{name: "python", cmd: "python"}
-    )
-    :ok = OutputRouter.subscribe("python")
-    spawn_link(fn -> read_client_input("python") end)
+  def init(command_name) do
+    :ok = OutputRouter.subscribe(command_name)
+    spawn_link(fn -> read_client_input(command_name) end)
     {:ok, nil}
   end
 
