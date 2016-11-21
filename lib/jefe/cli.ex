@@ -18,7 +18,7 @@ defmodule Jefe.CLI do
   def main(args) do
     get_exec_port()
 
-    Application.put,env(:erlexec, :portexe, String.to_charlist(exec_port_exe))
+    Application.put_env(:erlexec, :portexe, String.to_charlist(exec_port_exe))
 
     {:ok, _} = Application.ensure_all_started(:jefe)
 
