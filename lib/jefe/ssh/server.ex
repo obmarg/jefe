@@ -17,10 +17,10 @@ defmodule Jefe.SSH.Server do
       {0,0,0,0},
       5867,
       shell: &spawn_session/1,
-      user_passwords: [{'graeme', 'test'}],
       # TODO: Ideally we should be able to generate our own ssh keys
       # on startup if there aren't already some in place...
-      system_dir: '/Users/graeme/src/securi/test/test_ssh_keys'
+      system_dir: '/Users/graeme/src/securi/test/test_ssh_keys',
+      auth_methods: 'publickey'
     )
     true = Process.link(pid)
     {:ok, pid}
