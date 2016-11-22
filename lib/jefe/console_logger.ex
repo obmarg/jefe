@@ -69,11 +69,11 @@ defmodule Jefe.ConsoleLogger do
   defp color_map(commands) do
     color_fns = Stream.cycle([
       &IO.ANSI.green/0,
-      &IO.ANSI.red/0,
       &IO.ANSI.magenta/0,
       &IO.ANSI.cyan/0,
       &IO.ANSI.yellow/0,
       &IO.ANSI.blue/0,
+      &IO.ANSI.red/0,
     ])
     for {command, color} <- Enum.zip(commands, color_fns), into: %{} do
       {command.name, fn (data) ->
