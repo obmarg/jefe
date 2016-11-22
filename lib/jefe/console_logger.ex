@@ -35,7 +35,8 @@ defmodule Jefe.ConsoleLogger do
     setup_flush_timer
 
     {:ok,
-     %{command_str_width: max_length + 1,
+     %{settings: Application.get_env(:jefe, :console_output) |> Enum.into(%{}),
+       command_str_width: max_length,
        color_map: color_map(commands),
        buffers: %{}}}
   end
@@ -84,9 +85,11 @@ defmodule Jefe.ConsoleLogger do
   @spec format_line(String.t, state, String.t) :: String.t
   defp format_line(command_name, state, line) do
     color_fn = state.color_map[command_name] || fn x -> x end
-    time_str = Timex.format!(Timex.now, "%T", :strftime)
+    time_str = if state.settings.clock do
+      Timex.format!(Timex.now, "%T", :strftime) <> " "
+    end
     command_name = String.pad_trailing(command_name, state.command_str_width)
-    color_fn.("#{time_str} #{command_name} | ") <> line
+    color_fn.("#{time_str || ""}#{command_name} | ") <> line
   end
 
   defp setup_flush_timer() do

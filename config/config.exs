@@ -24,7 +24,10 @@ use Mix.Config
 config :jefe,
   rebar_version: "3.3.2",
   erlexec_version: "1.6.4",
-  ssh_port: 5867
+  ssh_port: 5867,
+  console_output: [
+    clock: true
+  ]
 
 config :ex_unit, capture_log: true
 
