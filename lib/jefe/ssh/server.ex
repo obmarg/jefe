@@ -18,8 +18,8 @@ defmodule Jefe.SSH.Server do
     gen_key("ssh_host_dsa_key", "dsa")
 
     {:ok, pid} = :ssh.daemon(
-      {0,0,0,0},
-      5867,
+      {127,0,0,1},
+      Application.get_env(:jefe, :ssh_port),
       shell: &spawn_session/1,
       # TODO: Ideally we should be able to generate our own ssh keys
       # on startup if there aren't already some in place...

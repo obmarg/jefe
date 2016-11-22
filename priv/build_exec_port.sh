@@ -3,8 +3,8 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-REBAR_VERSION=3.3.2
-ERLEXEC_VERSION=1.6.4
+REBAR_VERSION="$1"
+ERLEXEC_VERSION="$2"
 
 wget https://github.com/erlang/rebar3/releases/download/$REBAR_VERSION/rebar3
 chmod +x rebar3

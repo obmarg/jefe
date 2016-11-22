@@ -21,6 +21,13 @@ use Mix.Config
 #     config :logger, level: :info
 #
 
+config :jefe,
+  rebar_version: "3.3.2",
+  erlexec_version: "1.6.4",
+  ssh_port: 5867
+
+config :ex_unit, capture_log: true
+
 # It is also possible to import configuration files, relative to this
 # directory. For example, you can emulate configuration per environment
 # by uncommenting the line below and defining dev.exs, test.exs and such.

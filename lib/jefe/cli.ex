@@ -36,7 +36,9 @@ defmodule Jefe.CLI do
       File.write!(shell_path, @build_exec_port, [:write])
       File.chmod!(shell_path, 00500)
       {_, 0} = System.cmd(
-        shell_path, [],
+        shell_path,
+        [Application.get_env(:jefe, :rebar_version),
+         Application.get_env(:jefe, :erlexec_version)],
         cd: temp_dir,
         into: IO.stream(:stdio, :line)
       )
