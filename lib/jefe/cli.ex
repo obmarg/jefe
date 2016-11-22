@@ -34,7 +34,8 @@ defmodule Jefe.CLI do
 
       IO.puts "Writing shell script to #{shell_path}"
       File.write!(shell_path, @build_exec_port, [:write])
-      File.chmod!(shell_path, 00500)
+      File.chmod!(shell_path, 0o500)
+
       {_, 0} = System.cmd(
         shell_path,
         [Application.get_env(:jefe, :rebar_version),
@@ -53,7 +54,7 @@ defmodule Jefe.CLI do
 
       File.mkdir_p!(exec_port_dir)
       File.cp!(executable_file, exec_port_exe)
-      File.chmod!(exec_port_exe, 00700)
+      File.chmod!(exec_port_exe, 0o700)
     end
   end
 
