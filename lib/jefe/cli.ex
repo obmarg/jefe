@@ -16,6 +16,57 @@ defmodule Jefe.CLI do
   @external_resource "priv/build_exec_port.sh"
 
   def main(args) do
+    Application.load(:jefe)
+    case parse_args(args) do
+      :ok -> run
+      :quit ->
+        nil
+    end
+  end
+
+  @spec parse_args([String.t]) :: :ok | :exit
+  defp parse_args(args) do
+    {parsed, _} = OptionParser.parse!(
+      args,
+      strict: [
+        help: :boolean,
+        version: :boolean,
+        debug: :boolean,
+        env: :keep,
+        procfile: :string,
+        port: :integer
+      ],
+      aliases: [
+        h: :help,
+        v: :version,
+        d: :debug,
+        e: :env,
+        f: :procfile,
+        p: :port
+      ]
+    )
+    envs = Keyword.get_values(parsed, :env)
+    parsed = Enum.into(parsed, %{})
+    case parsed do
+      %{help: true} ->
+        IO.puts(usage)
+        :quit
+      %{version: true} ->
+        {:ok, version} = :application.get_key(:jefe, :vsn)
+        IO.puts("Jefe v#{version}")
+        :quit
+      parsed ->
+        if Map.has_key?(parsed, :debug) do
+          Application.put_env(:jefe, :debug, parsed[:debug])
+        end
+        if Map.has_key?(parsed, :port) do
+          Application.put_env(:jefe, :ssh_port, parsed[:port])
+        end
+        :ok
+    end
+  end
+
+  defp run() do
     get_exec_port()
 
     Application.put_env(:erlexec, :portexe, String.to_charlist(exec_port_exe))
@@ -23,6 +74,21 @@ defmodule Jefe.CLI do
     {:ok, _} = Application.ensure_all_started(:jefe)
 
     :timer.sleep(:infinity)
+  end
+
+  defp usage do
+    """
+    Usage:
+      jefe <options>
+
+    Options:
+      -h --help       Show this help.
+      -v --version    Show version.
+      -d --debug      Print debug messages.  [Unimplemented]
+      -e --env        Specify one or more .env files to load. [Unimplemented]
+      -f --procfile   Specify an alternative Procfile to load. [Unimplemented]
+      -p --port       Specify which port ssh should listen on.
+    """
   end
 
   defp get_exec_port() do
@@ -41,7 +107,6 @@ defmodule Jefe.CLI do
         [Application.get_env(:jefe, :rebar_version),
          Application.get_env(:jefe, :erlexec_version)],
         cd: temp_dir,
-        into: IO.stream(:stdio, :line)
       )
 
       # Find the executable we created and copy it to the right location...
