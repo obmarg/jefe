@@ -17,7 +17,7 @@ defmodule Jefe.Mixfile do
   def application do
     [
       applications: [:logger, :erlexec, :ssh, :gproc, :timex],
-      included_applications: [:recon],
+      included_applications: [:recon, :dotenv],
       mod: {Jefe, []}
     ]
   end
@@ -40,6 +40,7 @@ defmodule Jefe.Mixfile do
     [{:erlexec, github: "obmarg/erlexec"},
      {:gproc, "~> 0.6.1"},
      {:recon, "~> 2.2.1"},
+     {:dotenv, "~> 2.1"},
 
      {:timex, "~> 3.0"},
      # Explicitly have to ask for tzdata 0.1.8 to work around this issue:

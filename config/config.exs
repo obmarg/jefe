@@ -26,8 +26,9 @@ config :jefe,
   erlexec_version: "1.6.4",
   ssh_port: 5867,
   console_output: [
-    clock: true
-  ]
+    clock: false
+  ],
+  env: []
 
 config :ex_unit, capture_log: true
 

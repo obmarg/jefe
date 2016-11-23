@@ -44,7 +44,9 @@ defmodule Jefe.CommandRunner do
 
   def handle_info(:timeout, state = %{command: %{cmd: cmd}}) do
     {:ok, pid, os_pid} = :exec.run_link(
-      cmd |> String.to_char_list, [:stdout, :stderr, :stdin, :pty]
+      cmd |> String.to_char_list,
+      [:stdout, :stderr, :stdin, :pty,
+       {:env, Application.get_env(:jefe, :env)}]
     )
 
     # Ideally I'd like to link to the erlexec process, but that doesn't

@@ -45,7 +45,9 @@ defmodule Jefe.CLI do
         p: :port
       ]
     )
-    envs = Keyword.get_values(parsed, :env)
+
+    load_envs(Keyword.get_values(parsed, :env))
+
     parsed = Enum.into(parsed, %{})
     case parsed do
       %{help: true} ->
@@ -82,13 +84,22 @@ defmodule Jefe.CLI do
       jefe <options>
 
     Options:
-      -h --help       Show this help.
-      -v --version    Show version.
-      -d --debug      Print debug messages.  [Unimplemented]
-      -e --env        Specify one or more .env files to load. [Unimplemented]
-      -f --procfile   Specify an alternative Procfile to load. [Unimplemented]
-      -p --port       Specify which port ssh should listen on.
+      -h, --help                     Show this help.
+      -v, --version                  Show version.
+      -d, --debug                    Print debug messages.  [Unimplemented]
+      -e <FILE>, --env <FILE>        Specify one or more .env files to load.
+      -f <FILE>, --procfile <FILE>   Specify an alternative Procfile to load. [Unimplemented]
+      -p <PORT>, --port <PORT>       Specify which port ssh should listen on.
     """
+  end
+
+  defp load_envs([]), do: nil
+  defp load_envs(envs) do
+    %{values: values} = Dotenv.load(envs)
+    values = Enum.map(values, fn {k, v} ->
+      {String.to_charlist(k), String.to_charlist(v)}
+    end)
+    Application.put_env(:jefe, :env, values)
   end
 
   defp get_exec_port() do
