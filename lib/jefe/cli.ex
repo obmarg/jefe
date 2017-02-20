@@ -154,12 +154,7 @@ defmodule Jefe.CLI do
 
   @spec temp_dir :: String.t
   defp temp_dir do
-    cond do
-      File.exists?("/tmp") -> "/tmp/"
-      File.exists?("/var/tmp") -> "/var/tmp"
-      tmp = System.get_env("TEMP") -> tmp
-      true -> raise RuntimeError, "Could not find temporary directory"
-    end <> random_postfix
+    System.tmp_dir! <> random_postfix
   end
 
   @spec random_postfix :: String.t

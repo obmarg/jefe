@@ -30,6 +30,10 @@ config :jefe,
   ],
   env: []
 
+if Mix.env == :debug do
+  config :jefe, debug: true
+end
+
 config :ex_unit, capture_log: true
 
 # It is also possible to import configuration files, relative to this
