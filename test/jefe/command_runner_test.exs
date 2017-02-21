@@ -5,53 +5,59 @@ defmodule Jefe.CommandRunnerTest do
   alias Jefe.CommandRunner, as: Runner
 
   test "runs command" do
-    {:ok, pid} = Runner.start_link(
-      %Command{name: "test", cmd: "sleep 1"}
+    name = name()
+    {:ok, _pid} = Runner.start_link(
+      %Command{name: name, cmd: "sleep 1"}
     )
     :timer.sleep(10)
-    os_pid = Runner.os_pid("test")
+    os_pid = Runner.os_pid(name)
     assert os_pid in :exec.which_children
     # TODO: Could do a `ps aux` if I really wanted...
   end
 
   test "forwards output to outputters subscribed to command name" do
-    {:ok, pid} = Runner.start_link(
-      %Command{name: "test", cmd: "echo 'hello!'"}
+    name = name()
+    {:ok, _pid} = Runner.start_link(
+      %Command{name: name, cmd: "echo 'hello!'"}
     )
-    OutputRouter.subscribe("test")
+    OutputRouter.subscribe( name)
     assert_receive {:output, {:stdout, "hello!\r\n"}}
   end
 
   test "forwards output to outputters subscribed to all" do
-    {:ok, pid} = Runner.start_link(
-      %Command{name: "test", cmd: "echo 'hello!'"}
+    name = name()
+    {:ok, _pid} = Runner.start_link(
+      %Command{name: name, cmd: "echo 'hello!'"}
     )
     OutputRouter.subscribe
-    assert_receive {:output, "test", {:stdout, "hello!\r\n"}}
+    assert_receive {:output, ^name, {:stdout, "hello!\r\n"}}
   end
 
   test "dies if command does not exist" do
+    name = name()
     {:ok, pid} = GenServer.start(
       Runner,
-      %Command{name: "test", cmd: "blargasdjsakdjad"}
+      %Command{name: name, cmd: "blargasdjsakdjad"}
     )
     :timer.sleep(50)
     refute Process.alive?(pid)
   end
 
   test "runner dies if command dies" do
+    name = name()
     {:ok, pid} = GenServer.start(
       Runner,
-      %Command{name: "test", cmd: "echo 'hello!'"}
+      %Command{name: name, cmd: "echo 'hello!'"}
     )
     :timer.sleep(50)
     refute Process.alive?(pid)
   end
 
   test "command dies if runner dies" do
+    name = name()
     {:ok, pid} = GenServer.start(
       Runner,
-      %Command{name: "test", cmd: "sleep 2"}
+      %Command{name: name, cmd: "sleep 2"}
     )
     :timer.sleep(50)
 
@@ -64,12 +70,21 @@ defmodule Jefe.CommandRunnerTest do
   end
 
   test "sending input to command" do
+    name = name()
     {:ok, _} = Runner.start_link(
-      %Command{name: "test", cmd: "read FIRSTWORD REST; echo $FIRSTWORD; sleep 1"}
+      %Command{name: name, cmd: "read FIRSTWORD REST; echo $FIRSTWORD; sleep 1"}
     )
-    OutputRouter.subscribe("test")
+    OutputRouter.subscribe(name)
 
-    Runner.send_output("test", "HELLO THERE!\n")
+    Runner.send_output(name, "HELLO THERE!\n")
     assert_receive {:output, {:stdout, "HELLO\r\n"}}
+  end
+
+  defp name() do
+    "test-#{random_string(3)}"
+  end
+
+  defp random_string(length) do
+    :crypto.strong_rand_bytes(length) |> Base.url_encode64 |> binary_part(0, length)
   end
 end
